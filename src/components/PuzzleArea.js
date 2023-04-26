@@ -20,13 +20,53 @@ const PuzzleArea = () => {
     console.log(droppedPieces);
   }, [hoveredPiece]);
 
+  //   const [{ isOver }, drop] = useDrop(() => ({
+  //     accept: "piece",
+  //     drop: (item, monitor) => {
+  //       const clientOffset = monitor.getClientOffset();
+  //       checkHoveredPiece(clientOffset);
+  //       console.log(hoveredPiece);
+  //       console.log("ドロップしたピースを出力");
+  //       console.log(item);
+  //       setDroppedPieces((prev) => [...prev, item.id]);
+  //       console.log(`ドロップ: ピース${item.id}`);
+  //     },
+  //     collect: (monitor) => ({
+  //       isOver: monitor.isOver(),
+  //     }),
+  //   }));
+
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "piece",
     drop: (item, monitor) => {
       const clientOffset = monitor.getClientOffset();
-      checkHoveredPiece(clientOffset);
-      console.log(item);
-      setDroppedPieces((prev) => [...prev, item.id]);
+      const hoveredPiece = checkHoveredPiece(clientOffset);
+
+      console.log("重なっていたピースを出力", hoveredPiece);
+      console.log("ドロップしたピースを出力", item);
+
+      if (hoveredPiece) {
+        const pieceWidth = 94; // ピースの横幅
+        const insertBefore = hoveredPiece.relativeX <= pieceWidth / 2;
+        console.log(insertBefore, "insertBefore");
+
+        setDroppedPieces((prev) => {
+          const index = prev.findIndex((piece) => piece === hoveredPiece.piece);
+
+          // 新しい配列を作成し、ドロップされたピースを適切な位置に挿入する
+          const newPieces = [...prev];
+          if (insertBefore) {
+            newPieces.splice(index, 0, item.id);
+          } else {
+            newPieces.splice(index + 1, 0, item.id);
+          }
+
+          return newPieces;
+        });
+      } else {
+        setDroppedPieces((prev) => [...prev, item.id]);
+      }
+
       console.log(`ドロップ: ピース${item.id}`);
     },
     collect: (monitor) => ({
@@ -51,11 +91,9 @@ const PuzzleArea = () => {
       const rect = ref.getBoundingClientRect();
       const relativeX = clientOffset.x - rect.left;
       const relativeY = clientOffset.y - rect.top;
-      console.log(piece);
-      console.log("check");
-      setHoveredPiece({ piece, relativeX, relativeY });
+      return { piece, relativeX, relativeY };
     } else {
-      setHoveredPiece(null);
+      return null;
     }
   };
 
