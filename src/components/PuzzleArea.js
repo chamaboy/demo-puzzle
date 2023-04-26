@@ -107,16 +107,17 @@ const PuzzleArea = () => {
       className={styles["puzzle-area"]}
       style={springProps}
     >
-      組み立てエリア
-      {droppedPieces.map((piece, index) => (
-        <div
-          ref={(el) => pieceRefs.current.set(piece, el)}
-          key={index}
-          className={styles["dropped-piece"]}
-        >
-          ピース{piece}
-        </div>
-      ))}
+      <div className={styles["puzzle-pieces-row"]}>
+        {droppedPieces.map((piece, index) => (
+          <div
+            ref={(el) => pieceRefs.current.set(piece, el)}
+            key={index}
+            className={styles["dropped-piece"]}
+          >
+            ピース{piece}
+          </div>
+        ))}
+      </div>
     </animated.div>
   );
 };
