@@ -47,15 +47,26 @@ const PuzzleArea = () => {
 
       if (hoveredPiece) {
         const pieceWidth = 94; // ピースの横幅
-        const insertBefore = hoveredPiece.relativeX <= pieceWidth / 2;
-        console.log(insertBefore, "insertBefore");
+        // const insertLeft = hoveredPiece.relativeX <= pieceWidth / 2;
+        const { relativeX, relativeY } = hoveredPiece;
+        const isInRangeX = 20 <= relativeX && relativeX < 70;
+        const isInRangeYTop = 0 <= relativeY && relativeY < 20;
+        const isInRangeYCenter = 20 <= relativeY && relativeY < 50;
+        const isInRangeYBottom = 50 <= relativeY && relativeY < 70;
+
+        const insertLeft = isInRangeYCenter && relativeX < pieceWidth / 2;
+        const insertRight = isInRangeYCenter && relativeX >= pieceWidth / 2;
+        const insertTop = isInRangeX && isInRangeYTop;
+        const insertBottom = isInRangeX && isInRangeYBottom;
+
+        console.log(insertLeft, "insertLeft");
 
         setDroppedPieces((prev) => {
           const index = prev.findIndex((piece) => piece === hoveredPiece.piece);
 
           // 新しい配列を作成し、ドロップされたピースを適切な位置に挿入する
           const newPieces = [...prev];
-          if (insertBefore) {
+          if (insertLeft) {
             newPieces.splice(index, 0, item.id);
           } else {
             newPieces.splice(index + 1, 0, item.id);
