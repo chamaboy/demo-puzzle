@@ -20,22 +20,6 @@ const PuzzleArea = () => {
     console.log(droppedPieces);
   }, [hoveredPiece]);
 
-  //   const [{ isOver }, drop] = useDrop(() => ({
-  //     accept: "piece",
-  //     drop: (item, monitor) => {
-  //       const clientOffset = monitor.getClientOffset();
-  //       checkHoveredPiece(clientOffset);
-  //       console.log(hoveredPiece);
-  //       console.log("ドロップしたピースを出力");
-  //       console.log(item);
-  //       setDroppedPieces((prev) => [...prev, item.id]);
-  //       console.log(`ドロップ: ピース${item.id}`);
-  //     },
-  //     collect: (monitor) => ({
-  //       isOver: monitor.isOver(),
-  //     }),
-  //   }));
-
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "piece",
     drop: (item, monitor) => {
