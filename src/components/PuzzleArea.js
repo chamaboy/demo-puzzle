@@ -4,20 +4,18 @@ import { useSpring, animated } from "react-spring";
 import styles from "@/styles/Home.module.css";
 
 const PuzzleArea = () => {
-  const [droppedPieces, setDroppedPieces] = useState([]);
   const [hoveredPiece, setHoveredPiece] = useState(null);
+  const [piecesRows, setPiecesRows] = useState([[]]);
   const pieceRefs = useRef(new Map());
 
   useEffect(() => {
     if (hoveredPiece) {
-      console.log(hoveredPiece);
       console.log(
         `ドラッグ中のピースがピース${hoveredPiece.piece}の上に重なっています。相対座標: X=${hoveredPiece.relativeX}, Y=${hoveredPiece.relativeY}`
       );
     } else {
       console.log("ドラッグ中のピースがdroppedPiecesの上に重なっていません。");
     }
-    console.log(droppedPieces);
   }, [hoveredPiece]);
 
   const [{ isOver }, drop] = useDrop(() => ({
@@ -30,7 +28,7 @@ const PuzzleArea = () => {
       console.log("ドロップしたピースを出力", item);
 
       if (hoveredPiece) {
-        const pieceWidth = 94; // ピースの横幅
+        const pieceWidth = 100; // ピースの横幅
         // const insertLeft = hoveredPiece.relativeX <= pieceWidth / 2;
         const { relativeX, relativeY } = hoveredPiece;
         const isInRangeX = 20 <= relativeX && relativeX < 70;
@@ -45,21 +43,57 @@ const PuzzleArea = () => {
 
         console.log(insertLeft, "insertLeft");
 
-        setDroppedPieces((prev) => {
-          const index = prev.findIndex((piece) => piece === hoveredPiece.piece);
+        setPiecesRows((prev) => {
+          const rowIndex = prev.findIndex((row) =>
+            row.includes(hoveredPiece.piece)
+          );
+          const index = prev[rowIndex].findIndex(
+            (piece) => piece === hoveredPiece.piece
+          );
 
-          // 新しい配列を作成し、ドロップされたピースを適切な位置に挿入する
-          const newPieces = [...prev];
-          if (insertLeft) {
-            newPieces.splice(index, 0, item.id);
+          console.log(rowIndex);
+          console.log(index);
+
+          let newRow = [...prev];
+
+          if (insertTop) {
+            console.log(insertTop, "insertTop");
+            console.log("上に配置します");
+            if (rowIndex === 0) {
+              newRow.unshift([item.id]);
+            } else {
+              newRow[rowIndex - 1] = [...newRow[rowIndex - 1], item.id];
+            }
+          } else if (insertBottom) {
+            console.log(insertBottom, "insertBottom");
+            console.log("下に配置します");
+            if (rowIndex === newRow.length - 1) {
+              newRow.push([item.id]);
+            } else {
+              newRow[rowIndex + 1] = [item.id, ...newRow[rowIndex + 1]];
+            }
           } else {
-            newPieces.splice(index + 1, 0, item.id);
+            const newPieces = [...prev[rowIndex]];
+            if (insertLeft) {
+              console.log("左に配置します");
+              newPieces.splice(index, 0, item.id);
+            } else {
+              console.log("右に配置します");
+              newPieces.splice(index + 1, 0, item.id);
+            }
+            newRow[rowIndex] = newPieces;
           }
 
-          return newPieces;
+          return newRow;
         });
       } else {
-        setDroppedPieces((prev) => [...prev, item.id]);
+        console.log("ピースが重なっていません");
+
+        setPiecesRows((prev) => {
+          const newRow = [...prev];
+          newRow[0] = [...prev[0], item.id];
+          return newRow;
+        });
       }
 
       console.log(`ドロップ: ピース${item.id}`);
@@ -81,6 +115,9 @@ const PuzzleArea = () => {
       );
     });
 
+    console.log(entries);
+    console.log(foundEntry);
+
     if (foundEntry) {
       const [piece, ref] = foundEntry;
       const rect = ref.getBoundingClientRect();
@@ -96,23 +133,29 @@ const PuzzleArea = () => {
     backgroundColor: isOver ? "lightblue" : "white",
     transform: `scale(${isOver ? 1.05 : 1})`,
   });
+
+  useEffect(() => {
+    console.log(piecesRows);
+  }, [piecesRows]);
   return (
     <animated.div
       ref={drop}
       className={styles["puzzle-area"]}
       style={springProps}
     >
-      <div className={styles["puzzle-pieces-row"]}>
-        {droppedPieces.map((piece, index) => (
-          <div
-            ref={(el) => pieceRefs.current.set(piece, el)}
-            key={index}
-            className={styles["dropped-piece"]}
-          >
-            ピース{piece}
-          </div>
-        ))}
-      </div>
+      {piecesRows.map((row, rowIndex) => (
+        <div key={rowIndex} className={styles["puzzle-pieces-row"]}>
+          {row.map((piece, index) => (
+            <div
+              ref={(el) => pieceRefs.current.set(piece, el)}
+              key={index}
+              className={styles["dropped-piece"]}
+            >
+              ピース{piece}
+            </div>
+          ))}
+        </div>
+      ))}
     </animated.div>
   );
 };

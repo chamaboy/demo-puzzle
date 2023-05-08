@@ -19,6 +19,7 @@
   background-color: #ffcc00;
   border: 1px solid black;
   user-select: none;
+  width: 100px;
 }
 
 .puzzle-area {
