@@ -27,66 +27,7 @@ const PuzzleArea = () => {
       console.log("重なっていたピースを出力", hoveredPiece);
       console.log("ドロップしたピースを出力", item);
 
-      if (hoveredPiece) {
-        const pieceWidth = 100; // ピースの横幅
-        // const insertLeft = hoveredPiece.relativeX <= pieceWidth / 2;
-        const { relativeX, relativeY } = hoveredPiece;
-        const isInRangeX = 20 <= relativeX && relativeX < 70;
-        const isInRangeYTop = 0 <= relativeY && relativeY < 20;
-        const isInRangeYCenter = 20 <= relativeY && relativeY < 50;
-        const isInRangeYBottom = 50 <= relativeY && relativeY < 70;
-
-        const insertLeft = isInRangeYCenter && relativeX < pieceWidth / 2;
-        const insertRight = isInRangeYCenter && relativeX >= pieceWidth / 2;
-        const insertTop = isInRangeX && isInRangeYTop;
-        const insertBottom = isInRangeX && isInRangeYBottom;
-
-        console.log(insertLeft, "insertLeft");
-
-        setPiecesRows((prev) => {
-          const rowIndex = prev.findIndex((row) =>
-            row.includes(hoveredPiece.piece)
-          );
-          const index = prev[rowIndex].findIndex(
-            (piece) => piece === hoveredPiece.piece
-          );
-
-          console.log(rowIndex);
-          console.log(index);
-
-          let newRow = [...prev];
-
-          if (insertTop) {
-            console.log(insertTop, "insertTop");
-            console.log("上に配置します");
-            if (rowIndex === 0) {
-              newRow.unshift([item.id]);
-            } else {
-              newRow[rowIndex - 1] = [...newRow[rowIndex - 1], item.id];
-            }
-          } else if (insertBottom) {
-            console.log(insertBottom, "insertBottom");
-            console.log("下に配置します");
-            if (rowIndex === newRow.length - 1) {
-              newRow.push([item.id]);
-            } else {
-              newRow[rowIndex + 1] = [item.id, ...newRow[rowIndex + 1]];
-            }
-          } else {
-            const newPieces = [...prev[rowIndex]];
-            if (insertLeft) {
-              console.log("左に配置します");
-              newPieces.splice(index, 0, item.id);
-            } else {
-              console.log("右に配置します");
-              newPieces.splice(index + 1, 0, item.id);
-            }
-            newRow[rowIndex] = newPieces;
-          }
-
-          return newRow;
-        });
-      } else {
+      if (!hoveredPiece) {
         console.log("ピースが重なっていません");
 
         setPiecesRows((prev) => {
@@ -94,7 +35,55 @@ const PuzzleArea = () => {
           newRow[0] = [...prev[0], item.id];
           return newRow;
         });
+        return;
       }
+
+      const pieceWidth = 100; // ピースの横幅
+      const { relativeX, relativeY } = hoveredPiece;
+      const isInRangeX = 20 <= relativeX && relativeX < 70;
+      const isInRangeYTop = 0 <= relativeY && relativeY < 20;
+      const isInRangeYCenter = 20 <= relativeY && relativeY < 50;
+      const isInRangeYBottom = 50 <= relativeY && relativeY < 70;
+
+      const insertLeft = isInRangeYCenter && relativeX < pieceWidth / 2;
+      const insertRight = isInRangeYCenter && relativeX >= pieceWidth / 2;
+      const insertTop = isInRangeX && isInRangeYTop;
+      const insertBottom = isInRangeX && isInRangeYBottom;
+
+      setPiecesRows((prev) => {
+        const rowIndex = prev.findIndex((row) =>
+          row.includes(hoveredPiece.piece)
+        );
+        const index = prev[rowIndex].findIndex(
+          (piece) => piece === hoveredPiece.piece
+        );
+
+        console.log("rowIndex", rowIndex);
+        console.log("index", index);
+
+        let newRow = [...prev];
+
+        if (insertTop || insertBottom) {
+          const insertIndex = insertTop ? rowIndex : rowIndex + 1;
+          console.log(insertIndex);
+          console.log(insertTop, "上に配置する");
+          console.log(insertBottom, "下に配置する");
+          newRow.splice(insertIndex, 0, [item.id]);
+          return newRow;
+        }
+
+        const newPieces = [...prev[rowIndex]];
+
+        const insertColIndex = insertLeft ? index : index + 1;
+        console.log(insertColIndex);
+        console.log(insertLeft, "左に配置する");
+        console.log(insertRight, "右に配置する");
+        newPieces.splice(insertColIndex, 0, item.id);
+
+        newRow[rowIndex] = newPieces;
+
+        return newRow;
+      });
 
       console.log(`ドロップ: ピース${item.id}`);
     },
