@@ -51,12 +51,15 @@ const PuzzleArea = () => {
       const insertBottom = isInRangeX && isInRangeYBottom;
 
       setPiecesRows((prev) => {
-        const rowIndex = prev.findIndex((row) =>
-          row.includes(hoveredPiece.piece)
-        );
-        const index = prev[rowIndex].findIndex(
-          (piece) => piece === hoveredPiece.piece
-        );
+        console.log(prev);
+        console.log(hoveredPiece.piece);
+        const [rowIndexStr, piece] = hoveredPiece.piece.split("_");
+        const rowIndex = parseInt(rowIndexStr, 10);
+
+        const index = prev[rowIndex].findIndex((pieceId) => {
+          const pieceNumber = parseInt(piece, 10);
+          return pieceId === pieceNumber;
+        });
 
         console.log("rowIndex", rowIndex);
         console.log("index", index);
@@ -94,7 +97,9 @@ const PuzzleArea = () => {
 
   const checkHoveredPiece = (clientOffset) => {
     const entries = Array.from(pieceRefs.current.entries());
+    console.log(entries);
     const foundEntry = entries.find(([_, ref]) => {
+      console.log("ref", ref);
       const rect = ref.getBoundingClientRect();
       console.log(clientOffset);
       console.log(rect);
@@ -106,7 +111,6 @@ const PuzzleArea = () => {
       );
     });
 
-    console.log(entries);
     console.log(foundEntry);
 
     if (foundEntry) {
@@ -130,16 +134,18 @@ const PuzzleArea = () => {
     console.log(piecesRows);
   }, [piecesRows]);
   return (
-    <animated.div
-      ref={drop}
-      className={styles["puzzle-area"]}
-      style={springProps}
-    >
+    <animated.div ref={drop} className={styles["puzzle-area"]}>
       {piecesRows.map((row, rowIndex) => (
         <div key={rowIndex} className={styles["puzzle-pieces-row"]}>
           {row.map((piece, index) => (
             <div
-              ref={(el) => pieceRefs.current.set(piece, el)}
+              ref={(el) => {
+                if (el) {
+                  pieceRefs.current.set(`${rowIndex}_${piece}`, el);
+                } else {
+                  pieceRefs.current.delete(`${rowIndex}_${piece}`);
+                }
+              }}
               key={index}
               className={styles["dropped-piece"]}
             >
