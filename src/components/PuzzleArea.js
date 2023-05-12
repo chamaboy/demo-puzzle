@@ -28,7 +28,7 @@ const PuzzleArea = () => {
       console.log("ドロップしたピースを出力", item);
 
       if (!hoveredPiece) {
-        console.log("ピースが重なっていません");
+        console.log(hoveredPiece, "ピースが重なっていません");
 
         setPiecesRows((prev) => {
           const newRow = [...prev];
@@ -96,6 +96,8 @@ const PuzzleArea = () => {
     const entries = Array.from(pieceRefs.current.entries());
     const foundEntry = entries.find(([_, ref]) => {
       const rect = ref.getBoundingClientRect();
+      console.log(clientOffset);
+      console.log(rect);
       return (
         clientOffset.x >= rect.left &&
         clientOffset.x <= rect.right &&
@@ -114,6 +116,7 @@ const PuzzleArea = () => {
       const relativeY = clientOffset.y - rect.top;
       return { piece, relativeX, relativeY };
     } else {
+      console.log("hoverdPieceがnull");
       return null;
     }
   };
