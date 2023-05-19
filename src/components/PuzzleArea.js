@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useDrop } from "react-dnd";
+import { useDrop, useDrag } from "react-dnd";
 import { useSpring, animated } from "react-spring";
 import styles from "@/styles/Home.module.css";
 
@@ -85,6 +85,21 @@ const PuzzleArea = () => {
 
         newRow[rowIndex] = newPieces;
 
+        console.log(newRow[rowIndex]);
+
+        if (item.originalIndex) {
+          const originalRowIndex = item.originalIndex.rowIndex;
+          const originalIndex = item.originalIndex.index;
+
+          console.log(originalIndex);
+          console.log("元の配列", newRow[originalRowIndex]);
+          newRow[originalRowIndex] = [
+            ...newRow[originalRowIndex].slice(0, originalIndex),
+            ...newRow[originalRowIndex].slice(originalIndex + 1),
+          ];
+          console.log("変更した配列", newRow[originalRowIndex]);
+        }
+
         return newRow;
       });
 
@@ -133,24 +148,45 @@ const PuzzleArea = () => {
   useEffect(() => {
     console.log(piecesRows);
   }, [piecesRows]);
+
+  const PuzzlePiece = ({ id, index, rowIndex }) => {
+    const [{ isDragging }, dragRef] = useDrag(() => ({
+      type: "piece",
+      item: { id, originalIndex: { rowIndex, index } },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    }));
+
+    return (
+      <div
+        ref={(el) => {
+          dragRef(el);
+          if (el) {
+            pieceRefs.current.set(`${rowIndex}_${id}`, el);
+          } else {
+            pieceRefs.current.delete(`${rowIndex}_${id}`);
+          }
+        }}
+        style={{ opacity: isDragging ? 0.5 : 1 }}
+        className={styles["dropped-piece"]}
+      >
+        ピース{id}
+      </div>
+    );
+  };
+
   return (
     <animated.div ref={drop} className={styles["puzzle-area"]}>
       {piecesRows.map((row, rowIndex) => (
         <div key={rowIndex} className={styles["puzzle-pieces-row"]}>
           {row.map((piece, index) => (
-            <div
-              ref={(el) => {
-                if (el) {
-                  pieceRefs.current.set(`${rowIndex}_${piece}`, el);
-                } else {
-                  pieceRefs.current.delete(`${rowIndex}_${piece}`);
-                }
-              }}
+            <PuzzlePiece
               key={index}
-              className={styles["dropped-piece"]}
-            >
-              ピース{piece}
-            </div>
+              id={piece}
+              index={index}
+              rowIndex={rowIndex}
+            />
           ))}
         </div>
       ))}
