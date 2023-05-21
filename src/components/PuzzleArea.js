@@ -3,10 +3,17 @@ import { useDrop } from "react-dnd";
 import { useSpring, animated } from "react-spring";
 import styles from "@/styles/Home.module.css";
 
+const DropHint = ({ position }) => {
+  const style = position ? { top: position.y, left: position.x } : {};
+
+  return <div className={styles["drop-hint"]} style={style} />;
+};
+
 const PuzzleArea = () => {
   const [hoveredPiece, setHoveredPiece] = useState(null);
   const [piecesRows, setPiecesRows] = useState([[]]);
   const pieceRefs = useRef(new Map());
+  const [hintPosition, setHintPosition] = useState(null);
 
   useEffect(() => {
     if (hoveredPiece) {
@@ -15,6 +22,22 @@ const PuzzleArea = () => {
       );
     } else {
       console.log("ドラッグ中のピースがdroppedPiecesの上に重なっていません。");
+    }
+
+    if (hoveredPiece) {
+      const hoveredEl = pieceRefs.current.get(hoveredPiece.piece);
+      if (hoveredEl) {
+        const rect = hoveredEl.getBoundingClientRect();
+        setHintPosition({
+          x: rect.right,
+          y: rect.top,
+        });
+      }
+    } else {
+      setHintPosition({
+        x: 0, // 左上隅のX座標
+        y: 0, // 左上隅のY座標
+      });
     }
   }, [hoveredPiece]);
 
@@ -152,8 +175,12 @@ const PuzzleArea = () => {
               ピース{piece}
             </div>
           ))}
+          {isOver && <DropHint position={hintPosition} />}
         </div>
       ))}
+      {isOver && piecesRows[0].length ? (
+        <DropHint position={hintPosition} />
+      ) : null}
     </animated.div>
   );
 };

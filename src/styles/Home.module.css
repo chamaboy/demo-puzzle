@@ -43,3 +43,13 @@
 .puzzle-pieces-row {
   display: flex;
 }
+
+.drop-hint {
+  padding: 20px;
+  background-color: #ffcc00;
+  border: 1px solid black;
+  user-select: none;
+  width: 100px;
+  height: 66px;
+  opacity: .5;
+}
