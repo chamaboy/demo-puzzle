@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useDrop } from "react-dnd";
+import { useDrop, useDrag } from "react-dnd";
 import { useSpring, animated } from "react-spring";
 import styles from "@/styles/Home.module.css";
 
@@ -74,6 +74,7 @@ const PuzzleArea = () => {
       const insertBottom = isInRangeX && isInRangeYBottom;
 
       setPiecesRows((prev) => {
+        //　setPieceRows内の処理を後ほど関数に分解する
         console.log(prev);
         console.log(hoveredPiece.piece);
         const [rowIndexStr, piece] = hoveredPiece.piece.split("_");
@@ -88,6 +89,34 @@ const PuzzleArea = () => {
         console.log("index", index);
 
         let newRow = [...prev];
+
+        if (item.originalIndex) {
+          const originalRowIndex = item.originalIndex.rowIndex;
+          const originalIndex = item.originalIndex.index;
+
+          console.log(originalRowIndex, "originalRowIndex");
+          console.log(originalIndex, "originalIndex");
+
+          console.log("元の配列", newRow[originalRowIndex]);
+          newRow[originalRowIndex] = [
+            ...newRow[originalRowIndex].slice(0, originalIndex),
+            ...newRow[originalRowIndex].slice(originalIndex + 1),
+          ];
+
+          const newPieces = [...newRow[rowIndex]];
+
+          const insertColIndex = insertLeft ? index : index + 1;
+          console.log(insertColIndex);
+          console.log(insertLeft, "左に配置する");
+          console.log(insertRight, "右に配置する");
+
+          newPieces.splice(insertColIndex, 0, item.id);
+
+          newRow[rowIndex] = newPieces;
+          console.log("変更した配列", newRow[originalRowIndex]);
+
+          return newRow;
+        }
 
         if (insertTop || insertBottom) {
           const insertIndex = insertTop ? rowIndex : rowIndex + 1;
@@ -107,6 +136,8 @@ const PuzzleArea = () => {
         newPieces.splice(insertColIndex, 0, item.id);
 
         newRow[rowIndex] = newPieces;
+
+        console.log(newRow[rowIndex]);
 
         return newRow;
       });
@@ -156,24 +187,45 @@ const PuzzleArea = () => {
   useEffect(() => {
     console.log(piecesRows);
   }, [piecesRows]);
+
+  const PuzzlePiece = ({ id, index, rowIndex }) => {
+    const [{ isDragging }, dragRef] = useDrag(() => ({
+      type: "piece",
+      item: { id, originalIndex: { rowIndex, index } },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    }));
+
+    return (
+      <div
+        ref={(el) => {
+          dragRef(el);
+          if (el) {
+            pieceRefs.current.set(`${rowIndex}_${id}`, el);
+          } else {
+            pieceRefs.current.delete(`${rowIndex}_${id}`);
+          }
+        }}
+        style={{ opacity: isDragging ? 0.5 : 1 }}
+        className={styles["dropped-piece"]}
+      >
+        ピース{id}
+      </div>
+    );
+  };
+
   return (
     <animated.div ref={drop} className={styles["puzzle-area"]}>
       {piecesRows.map((row, rowIndex) => (
         <div key={rowIndex} className={styles["puzzle-pieces-row"]}>
           {row.map((piece, index) => (
-            <div
-              ref={(el) => {
-                if (el) {
-                  pieceRefs.current.set(`${rowIndex}_${piece}`, el);
-                } else {
-                  pieceRefs.current.delete(`${rowIndex}_${piece}`);
-                }
-              }}
+            <PuzzlePiece
               key={index}
-              className={styles["dropped-piece"]}
-            >
-              ピース{piece}
-            </div>
+              id={piece}
+              index={index}
+              rowIndex={rowIndex}
+            />
           ))}
           {isOver && <DropHint position={hintPosition} />}
         </div>
