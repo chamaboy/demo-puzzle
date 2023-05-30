@@ -80,7 +80,7 @@ const PuzzleArea = () => {
             ...newRow[originalRowIndex].slice(originalIndex + 1),
           ];
 
-          const newPieces = [...newRow[originalRowIndex]];
+          const newPieces = [...newRow[rowIndex]];
 
           const insertColIndex = insertLeft ? index : index + 1;
           console.log(insertColIndex);
@@ -89,7 +89,7 @@ const PuzzleArea = () => {
 
           newPieces.splice(insertColIndex, 0, item.id);
 
-          newRow[originalRowIndex] = newPieces;
+          newRow[rowIndex] = newPieces;
           console.log("変更した配列", newRow[originalRowIndex]);
 
           return newRow;
