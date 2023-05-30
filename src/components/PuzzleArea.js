@@ -51,6 +51,7 @@ const PuzzleArea = () => {
       const insertBottom = isInRangeX && isInRangeYBottom;
 
       setPiecesRows((prev) => {
+        //　setPieceRows内の処理を後ほど関数に分解する
         console.log(prev);
         console.log(hoveredPiece.piece);
         const [rowIndexStr, piece] = hoveredPiece.piece.split("_");
@@ -65,6 +66,34 @@ const PuzzleArea = () => {
         console.log("index", index);
 
         let newRow = [...prev];
+
+        if (item.originalIndex) {
+          const originalRowIndex = item.originalIndex.rowIndex;
+          const originalIndex = item.originalIndex.index;
+
+          console.log(originalRowIndex, "originalRowIndex");
+          console.log(originalIndex, "originalIndex");
+
+          console.log("元の配列", newRow[originalRowIndex]);
+          newRow[originalRowIndex] = [
+            ...newRow[originalRowIndex].slice(0, originalIndex),
+            ...newRow[originalRowIndex].slice(originalIndex + 1),
+          ];
+
+          const newPieces = [...newRow[originalRowIndex]];
+
+          const insertColIndex = insertLeft ? index : index + 1;
+          console.log(insertColIndex);
+          console.log(insertLeft, "左に配置する");
+          console.log(insertRight, "右に配置する");
+
+          newPieces.splice(insertColIndex, 0, item.id);
+
+          newRow[originalRowIndex] = newPieces;
+          console.log("変更した配列", newRow[originalRowIndex]);
+
+          return newRow;
+        }
 
         if (insertTop || insertBottom) {
           const insertIndex = insertTop ? rowIndex : rowIndex + 1;
@@ -86,19 +115,6 @@ const PuzzleArea = () => {
         newRow[rowIndex] = newPieces;
 
         console.log(newRow[rowIndex]);
-
-        if (item.originalIndex) {
-          const originalRowIndex = item.originalIndex.rowIndex;
-          const originalIndex = item.originalIndex.index;
-
-          console.log(originalIndex);
-          console.log("元の配列", newRow[originalRowIndex]);
-          newRow[originalRowIndex] = [
-            ...newRow[originalRowIndex].slice(0, originalIndex),
-            ...newRow[originalRowIndex].slice(originalIndex + 1),
-          ];
-          console.log("変更した配列", newRow[originalRowIndex]);
-        }
 
         return newRow;
       });
